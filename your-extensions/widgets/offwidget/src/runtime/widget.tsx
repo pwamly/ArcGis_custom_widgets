@@ -13,17 +13,13 @@
     }
   }
 
-
-  componentDidMount(): void {
-    
-  }
+  componentDidMount(): void {}
 
   componentDidUpdate(prevProps: Readonly<AllWidgetProps<any>>, prevState: Readonly<any>, snapshot?: any): void {
     if(this.props.hasOwnProperty("stateProps")){
       this.setState(
-        {latestWkid:this.props.stateProps.spatialData.spatialReference.wkid, wkid:this.props.stateProps.spatialData.spatialReference.wkid,showWidget:true}
+        {latestWkid:this.props.stateProps.spatialData.spatialReference.latestWkid, wkid:this.props.stateProps.spatialData.spatialReference.wkid,showWidget:true}
       )
-
     }
   }
 

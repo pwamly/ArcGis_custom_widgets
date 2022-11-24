@@ -4,31 +4,29 @@
  import Point from "esri/geometry/Point";
 
  export default class Widget extends React.PureComponent<AllWidgetProps<any>, any> {
-  state = {
-    jimuMapView: null,
-    //*** ADD ***//
-    latitude: "",
-    longitude: ""
-  };
-
- activeViewChangeHandler = (jmv: JimuMapView) => {
-  if (jmv) {
-    this.setState({
-      jimuMapView: jmv
-    });
-
-    jmv.view.on("pointer-move", (evt) => {
-  const point: Point = this.state.jimuMapView.view.toMap({
-    x: evt.x,
-    y: evt.y
-  });
-  this.setState({
-    latitude: point.latitude.toFixed(3),
-    longitude: point.longitude.toFixed(3)
-  });
-});
+  constructor(props){
+    super(props);
+    this.state={
+      sketch:null,
+      showWidget:false
+    }
   }
-};
+
+
+  componentDidMount(): void {
+    
+  }
+
+  componentDidUpdate(prevProps: Readonly<AllWidgetProps<any>>, prevState: Readonly<any>, snapshot?: any): void {
+    if(this.props.hasOwnProperty("stateProps")){
+      console.log('',this.props.stateProps.sketch);
+      this.setState(
+        {sketch:this.props.stateProps.sketch,showWidget:true}
+      )
+
+   
+   }
+  }
 
    render() {
      return  <div className="widget-starter jimu-widget">
@@ -38,11 +36,12 @@
          this.props.useMapWidgetIds[0] && (
            <JimuMapViewComponent
              useMapWidgetId={this.props.useMapWidgetIds?.[0]}
-             onActiveViewChange={this.activeViewChangeHandler}
            />
          )
        }
-        <p>Lat/Lon: {this.state.latitude} {this.state.longitude}</p>
-     </div>;
+       <h4>Attribute Table</h4>
+        {this.state.showWidget &&<button onClick={()=>console.log('',this.state.sketch.delete)}>Delete graph</button>}
+        </div>;
+    
    }
  }

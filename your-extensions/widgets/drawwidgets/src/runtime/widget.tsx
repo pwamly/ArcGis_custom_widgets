@@ -10,15 +10,12 @@ export default class DrawingWidget extends React.PureComponent<AllWidgetProps<an
     
     sketch = null;
     graphicsLayer=null
-
     _init(){
         this.graphicsLayer = new GraphicsLayer();
         const map = new Map({
             basemap:"topo-vector",
             layers:[this.graphicsLayer],
         })
-
- 
 
         const view = new MapView({
             container:"display_map",
@@ -38,18 +35,27 @@ export default class DrawingWidget extends React.PureComponent<AllWidgetProps<an
             sketch.on("create",(event)=>{
                 if(event.state === "complete"){
                   console.log(event.graphic.geometry.toJSON());
-                  // console.log(webMercatorUtils.webMercatorToGeographic(event.graphic.geometry).toJSON());
                   this.openOff(event.graphic.geometry.toJSON());
                 
                 }
               
-            })
+            });
+
+            // listen to update event
+        sketch.on("update", (event)=>{
+            if(event.state === "start"){
+            this.openAttrt(sketch?sketch.delete:()=>{});}
+  });
         })
     }
 
     openOff=(data={})=>{
       this.props.dispatch(appActions.widgetStatePropChange("widget_3","spatialData",data));
     }
+
+    openAttrt=(data)=>{
+        this.props.dispatch(appActions.widgetStatePropChange("widget_5","sketch",data));
+      }
 
     componentDidMount(): void {
         this._init();
@@ -65,8 +71,9 @@ export default class DrawingWidget extends React.PureComponent<AllWidgetProps<an
                     height:900,
                     width: "100%"
                 }}
-            >
-            </div>
+            ><div>
+          </div>
+            </div> 
         )
     }
 }
