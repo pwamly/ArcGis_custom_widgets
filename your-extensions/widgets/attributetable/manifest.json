@@ -1,8 +1,8 @@
 {
     "name": "attributetable",
     "type": "widget",
-    "version": "1.8.0",
-    "exbVersion": "1.8.0",
+    "version": "1.9.0",
+    "exbVersion": "1.9.0",
     "dependency": "jimu-arcgis",
     "author": "stephano wamlyoma",
     "description": "This is the widget appearing on selections of graphic feature to accept geometry details",
