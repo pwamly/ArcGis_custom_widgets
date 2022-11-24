@@ -1,8 +1,9 @@
 {
-  "name": "pwamly",
-  "label": "Pwamly (Class)",
+  "name": "drawwidgets",
+  "label": "Draw graphics",
   "type": "widget",
   "version": "1.9.0",
+  "dependency": "jimu-arcgis",
   "exbVersion": "1.9.0",
   "author": "Esri R&D Center Beijing",
   "description": "This is the widget used in developer documentation",
