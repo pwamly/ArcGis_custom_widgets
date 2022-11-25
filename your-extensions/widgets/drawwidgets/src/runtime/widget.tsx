@@ -40,22 +40,29 @@ export default class DrawingWidget extends React.PureComponent<
       view.ui.add(sketch, "top-right");
       sketch.on("create", (event) => {
         if (event.state === "complete") {
-          console.log(event.graphic.geometry.toJSON());
+          localStorage.setItem(
+            event.graphic.get("uid"),
+            JSON.stringify({
+              uid: 1,
+              spatialData: event.graphic.geometry.toJSON(),
+            })
+          );
           this.openOff(event.graphic.geometry.toJSON());
-          
-          console.log('',event);
         }
       });
 
       // listen to select event on the drawings
       sketch.on("update", (event) => {
         if (event.state === "start") {
-            function deletegraphics(){
-                sketch.delete();
-            }
-            console.log('',event);
-
-          this.openAttrt(deletegraphics);
+          function deletegraphics() {
+            sketch.delete();
+          }
+          this.openAttrt({
+            funcDel: deletegraphics,
+            uid: event.graphics[0].get("uid"),
+            wkid: event.graphics[0].geometry.spatialReference.wkid,
+            latestWkid: event.graphics[0].geometry.spatialReference.latestWkid,
+          });
         }
       });
     });
@@ -69,7 +76,7 @@ export default class DrawingWidget extends React.PureComponent<
 
   openAttrt = (data) => {
     this.props.dispatch(
-      appActions.widgetStatePropChange("widget_5", "deletegraphics", data)
+      appActions.widgetStatePropChange("widget_5", "data", data)
     );
   };
 

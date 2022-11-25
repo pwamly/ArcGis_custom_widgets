@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { React, AllWidgetProps, jsx } from "jimu-core";
 import { JimuMapViewComponent, JimuMapView } from "jimu-arcgis";
-import Point from "esri/geometry/Point";
 
 export default class Widget extends React.PureComponent<
   AllWidgetProps<any>,
@@ -12,6 +11,9 @@ export default class Widget extends React.PureComponent<
     this.state = {
       deletegraphics: null,
       showWidget: false,
+      uid: "",
+      latestWkid: "",
+      wkid: "",
     };
   }
 
@@ -23,8 +25,13 @@ export default class Widget extends React.PureComponent<
     snapshot?: any
   ): void {
     if (this.props.hasOwnProperty("stateProps")) {
-      console.log("", this.props.stateProps.deletegraphics);
-      this.setState({ deletegraphics: this.props.stateProps.deletegraphics, showWidget: true });
+      this.setState({
+        deletegraphics: this.props.stateProps.data.funcDel,
+        showWidget: true,
+        latestWkid: this.props.stateProps.data.latestWkid,
+        wkid: this.props.stateProps.data.wkid,
+        uid: this.props.stateProps.data.uid,
+      });
     }
   }
 
@@ -41,25 +48,33 @@ export default class Widget extends React.PureComponent<
           )}
         <h4>Attribute Table</h4>
         {this.state.showWidget && (
-          <div> <table>
-          <tr style={{background:'gray'}}>
-            <th>Spatial Item</th>
-            <th>Data</th>
-          </tr>
-          <tr>
-            <td style={{fontWeight:'bold'}}>Graphic Id :</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td style={{fontWeight:'bold'}}>Spatial details(lw/wkid:):</td>
-            <td></td>
-          </tr>
-         
-        </table>
-        
-          <button style={{background:'blue',color:'white'}} onClick={() => this.state.deletegraphics()}>
-            Delete
-          </button></div>
+          <div>
+            {" "}
+            <table>
+              <tr style={{ background: "gray" }}>
+                <th>Spatial Item</th>
+                <th>Data</th>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: "bold" }}>Graphic Id :</td>
+                <td>{this.state.uid}</td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: "bold" }}>
+                  Spatial details(lw/wkid):
+                </td>
+                <td>
+                  {this.state.latestWkid} / {this.state.wkid}
+                </td>
+              </tr>
+            </table>
+            <button
+              style={{ background: "blue", color: "white" }}
+              onClick={() => this.state.deletegraphics()}
+            >
+              Delete
+            </button>
+          </div>
         )}
       </div>
     );
