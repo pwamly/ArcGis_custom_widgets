@@ -51,7 +51,7 @@ export default class Widget extends React.PureComponent<
             <td></td>
           </tr>
           <tr>
-            <td style={{fontWeight:'bold'}}>Spatial details(l/w):</td>
+            <td style={{fontWeight:'bold'}}>Spatial details(lw/wkid:):</td>
             <td></td>
           </tr>
          
