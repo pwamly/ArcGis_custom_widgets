@@ -10,10 +10,10 @@ import './assets/css/vendor/jquery-jvectormap-1.2.2.css';
 // <!-- third party css end -->
 
 // <!-- App css -->
-import "./assets/css/icons.min.css";
-import "./assets/css/app-modern.min.css";
-import './assets/css/app-modern-dark.min.css';
 import '../runtime/assets/core/css/core.css';
+import "./assets/css/icons.min.css";
+// import "./assets/css/app-modern.min.css";
+// import './assets/css/app-modern-dark.min.css';
 
 const Logo=require("./assets/images/logo-light.png");
 const Usflag=require("./assets/images/flags/us.jpg");
@@ -45,7 +45,9 @@ export default class Widget extends React.PureComponent<
     };
   }
 
-  componentDidMount(): void {}
+  componentDidMount(): void {
+
+  }
 
   componentDidUpdate(
     prevProps: Readonly<AllWidgetProps<any>>,
@@ -62,7 +64,30 @@ export default class Widget extends React.PureComponent<
     }
   }
 
+
+
   render() {
+    function  changetheme(){
+        const Theme=localStorage.getItem("currentTheme");
+
+        if(Theme=='light'){
+            localStorage.setItem("currentTheme", "dark");
+        }
+        localStorage.setItem("currentTheme", "light");
+
+        window.location.reload();
+    }
+
+    let theme='light';
+
+    const currentTheme=localStorage.getItem("currentTheme");
+
+    if(currentTheme=='dark'){
+       theme= require('./assets/css/app-modern-dark.min.css');
+
+    }else{
+        theme= require('./assets/css/app-modern.min.css');
+    }
     return ( <div >
 
     
@@ -70,10 +95,10 @@ export default class Widget extends React.PureComponent<
             <div className="container-fluid">
               
             {/* <!-- LOGO --> */}
-                <a href="index.html" className="topnav-logo">
-                    <span className="topnav-logo-lg">
-                       <img src={Logo} alt="" height="16"/>
-                    </span>
+                <a onClick={()=>changetheme()} className="topnav-logo">
+                    {<span className="topnav-logo-lg">
+                       {currentTheme?currentTheme:'light'}
+                    </span>}
                     <span className="topnav-logo-sm">
                         <img src={Logo} alt="" height="16"/>
                     </span>
