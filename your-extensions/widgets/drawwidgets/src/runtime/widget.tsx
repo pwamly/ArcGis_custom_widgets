@@ -37,9 +37,21 @@ export default class DrawingWidget extends React.PureComponent<
         view: view,
         creationMode: "update",
       });
+
+      sketch.visibleElements = {
+        createTools: {
+          point: false,
+          circle: false
+        },
+        selectionTools:{
+          "lasso-selection": false
+        },
+        settingsMenu: false
+      }
       view.ui.add(sketch, "top-right");
       sketch.on("create", (event) => {
         if (event.state === "complete") {
+          console.log('hhhhhhhhhhhhhhhhhhhhhh',sketch)
           localStorage.setItem(
             event.graphic.get("uid"),
             JSON.stringify({
@@ -95,7 +107,8 @@ export default class DrawingWidget extends React.PureComponent<
           width: "100%",
         }}
       >
-        <div></div>
+        <div>
+      </div>
       </div>
     );
   }

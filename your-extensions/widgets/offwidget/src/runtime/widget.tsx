@@ -44,7 +44,7 @@ export default class Widget extends React.PureComponent<
               useMapWidgetId={this.props.useMapWidgetIds?.[0]}
             />
           )}
-        {this.state.showWidget && <h4>OFF CANVAS</h4>}
+        {<h4 className="pwamly">OFF CANVAS</h4>}
         {this.state.showWidget && (
           <p>
             latestWkid/wkid: {this.state.latestWkid}/{this.state.wkid}

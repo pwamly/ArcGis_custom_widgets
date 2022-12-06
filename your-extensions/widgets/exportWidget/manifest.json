@@ -1,6 +1,6 @@
 {
-    "name": "get-map-coordinates",
-    "label": "get map coordinates",
+    "name": "exportWidget",
+    "label": "Export Widget",
     "type": "widget",
     "version": "1.9.0",
     "exbVersion": "1.9.0",
