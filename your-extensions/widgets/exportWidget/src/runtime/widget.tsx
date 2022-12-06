@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { React, AllWidgetProps, jsx } from "jimu-core";
 import { JimuMapViewComponent, JimuMapView } from "jimu-arcgis";
-import { Card, CardHeader, CardBody, CardFooter, Button } from "jimu-ui";
+import { Card,  Button } from "jimu-ui";
 import { ScreenOutlined } from "jimu-icons/outlined/brand/screen";
 import Sketch from "esri/widgets/Sketch";
 import GraphicsLayer from "esri/layers/GraphicsLayer";
@@ -25,7 +25,8 @@ export default class Widget extends React.PureComponent<
     jimuMapView: null,
     snap: null,
     saveImage: null,
-    deleteL:null
+    deleteL:null,
+    btnfocus:true
   };
 
   activeViewChangeHandler = (jmv: JimuMapView) => {
@@ -125,6 +126,8 @@ export default class Widget extends React.PureComponent<
 
         sketch.on("create", (event) => {
           if (event.state === "complete") {
+            this.setState({btnfocus:false})
+
           }
         });
       });
@@ -161,16 +164,13 @@ export default class Widget extends React.PureComponent<
                 gap: "25%",
               }}
             >
-              {" "}
-              <ScreenOutlined className="btn"
-                onClick={() => this.state.snap()}
+              <ScreenOutlined className={this.state.btnfocus?"btn-snap":"btn-snap-focus"}
+                onClick={() => {this.state.snap();this.setState({btnfocus:false})}}
                 size={30}
-                color="blue"
               />
-              <TrashOutlined className="btn"
-                onClick={() => this.state.deleteL()}
+              <TrashOutlined className="btn-delete"
+                onClick={() => {this.state.deleteL();this.setState({btnfocus:true})}}
                 size={30}
-                color="red"
               />
             </div>
           </div>
@@ -179,7 +179,7 @@ export default class Widget extends React.PureComponent<
           style={{ display: "flex", width: "100%", justifyContent: "center" }}
         >
           {" "}
-          <Button onClick={() => this.state.saveImage()}>Esporta mappa</Button>
+          <Button onClick={() => {this.state.saveImage();this.setState({btnfocus:true})}}>Esporta mappa</Button>
         </div>
       </div>
     );
