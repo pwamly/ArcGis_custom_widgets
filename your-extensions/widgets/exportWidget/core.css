@@ -35,7 +35,7 @@
   
   .btn-snap-focus{
     color: rgb(77, 75, 75);
-    background: rgb(0,94,202)
+    background: rgb(151, 192, 240)
 }
 
 .btn-snap-focus:after{
@@ -44,8 +44,4 @@
 
   }
   
-  .btn-snap-focus:hover{
-    color: rgb(77, 75, 75);
-    cursor: pointer;
-
-  }
+  
