@@ -34,6 +34,7 @@ export default class CreateLayer extends React.PureComponent<any,any>{
         advancedSelectionTable.setState({createdLayerTitle:layerTitle},()=>{
             advancedSelectionTable.addCreatedLayer();
         })
+        // this.onClose();
     }
 
     render(): React.ReactNode {

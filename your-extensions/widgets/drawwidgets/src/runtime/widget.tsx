@@ -51,7 +51,6 @@ export default class DrawingWidget extends React.PureComponent<
       view.ui.add(sketch, "top-right");
       sketch.on("create", (event) => {
         if (event.state === "complete") {
-          console.log('hhhhhhhhhhhhhhhhhhhhhh',sketch)
           localStorage.setItem(
             event.graphic.get("uid"),
             JSON.stringify({

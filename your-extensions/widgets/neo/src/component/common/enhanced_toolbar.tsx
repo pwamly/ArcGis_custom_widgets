@@ -4,26 +4,13 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import '../../assets/css/style.scss'
-import { Button } from 'jimu-ui';
 
 interface EnhancedTableToolbarProps {
     numSelected?: number,
-    children:any,
-    showRefreshButton?:boolean,
-    onClickRefresh?:(val?:any)=>void
-}
-
-const refreshButtonStyle = {
-    backgroundColor:"green",
-    color:"white",
+    children:any
 }
 
 export default class  EnhancedTableToolbar extends React.PureComponent<EnhancedTableToolbarProps,any>{
-
-    static defaultProps = {
-        showRefreshButton:false,
-        onClickRefresh:()=>{}
-    }
 
     render(): React.ReactNode {
         const { numSelected } = this.props;
@@ -42,18 +29,7 @@ export default class  EnhancedTableToolbar extends React.PureComponent<EnhancedT
             >
               <Typography component="div">
                 {this.props.children}
-                </Typography>
-                {this.props.showRefreshButton && 
-                    <div 
-                        style={{display:"flex",justifyContent:"flex-end",flex:"auto"}}
-                    >
-                        <Button 
-                            onClick={this.props.onClickRefresh}
-                            style = {refreshButtonStyle}
-                        >
-                            Refresh
-                        </Button>
-                    </div>}
+            </Typography>
             </Toolbar>
         );
     }

@@ -1,4 +1,4 @@
-import {React,appActions,WidgetManager,jsx} from 'jimu-core'
+import {React,appActions} from 'jimu-core'
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Container from '../assets/css/style';
@@ -8,8 +8,6 @@ import * as images from '../assets/images/'
 import helper from '../helper/helper';
 import { AdvancedSelectionTableContext } from '../context/context';
 import {getUri} from '../lib/build_uri';
-import AdvancedSelectionTable from '../runtime/widget';
-import layerObject from '../interface/interface'
 
 const options = [
     {
@@ -54,12 +52,13 @@ export default class  Options extends React.PureComponent<any,any> {
     static contextType?: React.Context<any> = AdvancedSelectionTableContext;
 
     onClickOption = (value:string)=>{
+        
         const layerId = this.context?.layerId;
         const advancedSelectionTable = this.context?.parent;
         const layerContents = this.context?.layerContents;
         const returnedAttributes = helper.getLayerAttributes(layerId,layerContents);
         const isItemSelected = this.context?.isItemSelected;
-        if (isItemSelected && returnedAttributes?.length > 0){
+        if (isItemSelected && returnedAttributes?.length >= 0){
             advancedSelectionTable?.setState({selectedAttributes:returnedAttributes});
             if (value === "zoomIn"){
                 advancedSelectionTable?.onClickZoomIn()
@@ -69,13 +68,13 @@ export default class  Options extends React.PureComponent<any,any> {
                 this.exportFile(returnedAttributes,"json");
             }else if (value === "statistics"){
                 this.controlStatisticModal(layerId);
+            }
+            else if (value === "delete"){
+                advancedSelectionTable?.setState({deleteStatus:true});
             }else if (value === "layer"){
                 advancedSelectionTable?.setState({opencreateLayer:true});
+
                 const uri = getUri(returnedAttributes,"csv",advancedSelectionTable,"addLayer");
-            }else if (value === "attributetable"){
-                this.showAttributeTable();
-            }else if (value === "delete"){
-                this.deleteLayer(layerId,layerContents)
             }
         }
     }
@@ -83,38 +82,7 @@ export default class  Options extends React.PureComponent<any,any> {
     exportFile = (selectedAttributes:any[],exportType:string)=>{
         const advancedSelectionTable = this.context?.parent;
         const uri = getUri(selectedAttributes,exportType,advancedSelectionTable);
-        if(exportType === "csv"){
-            window.open(uri,"blank");
-        }else{
-            if (window.saveAs && uri){
-                window.saveAs(uri,"feature.json")
-            }else{
-                window.open(uri,"blank");
-            }
-        }
-    }
-
-    deleteLayer = (id:string,layerContents:layerObject[])=>{
-        const advancedSelectionTable = this.context?.parent;
-        let currentNUmberOfAttributes = {};
-        let numberOfAttribute = this.context?.numberOfAttribute
-        if (Object.keys(numberOfAttribute).length > 0){
-            currentNUmberOfAttributes = {...numberOfAttribute};
-            delete currentNUmberOfAttributes[id];
-    
-        }
-        let newLayerContents = [];
-        if (layerContents.length > 0){
-            newLayerContents = layerContents.reduce((newArray,layerContent)=>{
-                if (layerContent?.id !== id){
-                    newArray.push(layerContent);
-                }
-                return newArray;
-            },[])
-        }
-        helper.unhighlightLayer(id);
-        // item.layer.visible = false;
-        advancedSelectionTable?.setState({numberOfAttribute:currentNUmberOfAttributes,layerContents:newLayerContents})
+        advancedSelectionTable?.setState({exportStatus:true,uri:uri})
     }
 
     controlStatisticModal = (layerId:string)=>{
@@ -129,10 +97,9 @@ export default class  Options extends React.PureComponent<any,any> {
         advancedSelectionTable?.setState({anchorEl:null})
     };
 
-    showAttributeTable = ()=>{helper.openTableAttribute()}
-
     render(){
         const open = Boolean(this.context?.anchorEl);
+
         return (
             <div>
                 <Menu

@@ -15,12 +15,12 @@ export default class  LayerContents extends React.PureComponent<any,any>{
   static contextType?: React.Context<any> = AdvancedSelectionTableContext;
 
   handleClick = (event: React.MouseEvent<unknown>, name: string,id:string) => {
-    const selected = this.context?.checkedLayers;
+    const selected = this.context?.selected;
     const advancedSelectionTable = this.context?.parent;
-    const selectedIndex = selected?.indexOf(id);
+    const selectedIndex = selected?.indexOf(name);
     let newSelected: readonly string[] = [];
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected??[],id);
+      newSelected = newSelected.concat(selected??[],name);
     }else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected?.slice(1));
     } else if (selectedIndex === selected?.length - 1) {
@@ -31,8 +31,32 @@ export default class  LayerContents extends React.PureComponent<any,any>{
     if (selectedIndex !== -1){
       this.removeAttributes(id);
     }
-    advancedSelectionTable?.setState({checkedLayers:newSelected});
+    this.dispatchCheckedLayer(id)
+    advancedSelectionTable?.setState({selected:newSelected});
   };
+
+  dispatchCheckedLayer = (layerId:string)=>{
+    const advancedSelectionTable = this.context?.parent;
+    const currentCheckedLayers = this.context?.checkedLayers;
+    let index = -1;
+    let newCheckedLayers = []
+    if (currentCheckedLayers?.length > 0){
+      index = currentCheckedLayers.indexOf(layerId);
+      if (index !== -1){
+        newCheckedLayers = currentCheckedLayers.reduce((newArray,id:string)=>{
+          if (id !== layerId){
+            newArray.push(id);
+          }
+          return newArray;
+        },[])
+      }else{
+        newCheckedLayers = [...currentCheckedLayers,layerId]
+      }
+    }else{
+      newCheckedLayers.push(layerId);
+    }
+    advancedSelectionTable?.setState({checkedLayers:newCheckedLayers});
+  }
 
   removeAttributes = (id:string)=>{
     const advancedSelectionTable = this.context?.parent;
@@ -54,9 +78,10 @@ export default class  LayerContents extends React.PureComponent<any,any>{
 
   }
 
-  isSelected = (id: string) => {
-    const selected = this.context?.checkedLayers;
-    return selected.indexOf(id) !== -1;
+
+  isSelected = (name: string) => {
+    const selected = this.context?.selected;
+    return selected.indexOf(name) !== -1;
   }
 
   handleClickMoreHorizonIcon = (event: React.MouseEvent<HTMLButtonElement>,layerId:string,isItemSelected:boolean) => {
@@ -77,25 +102,17 @@ export default class  LayerContents extends React.PureComponent<any,any>{
     }
   }
 
-  onClickRefresh = ()=>{
-    const advancedSelectionTable = this.context?.parent;
-    advancedSelectionTable?.onClickRefresh();
-  }
-
   render(){
+    const advancedSelectionTable = this.context?.parent
     const layers = this.context?.layers;
     const numberOfAttribute = this.context.numberOfAttribute;
     const component_type = this.context?.component_type;
-    const selected = this.context?.checkedLayers;
+    const selected = this.context?.selected;
 
     if (component_type === "LAYERS_CONTENTS"){
       return (
         <>
-          <EnhancedTableToolbar 
-            numSelected={selected?.length} 
-            showRefreshButton = {true} 
-            onClickRefresh = {this.onClickRefresh}
-          >
+          <EnhancedTableToolbar numSelected={selected?.length}>
             <SelectGeometry />
           </EnhancedTableToolbar>
           <Container 
@@ -112,7 +129,7 @@ export default class  LayerContents extends React.PureComponent<any,any>{
           <Container height={450} width = {"100%"} overflow = "auto"  className='centerize-contents padding-contents20'>
             {
               layers?.map((layer:layerObject,k)=>{
-                const isItemSelected = this.isSelected(layer.id);
+                const isItemSelected = this.isSelected(layer.layerName);
                 return(
                   <div key = {`${k}`+layer?.layerName} className = "layer-content-container row-color-hover">
                     <div className='check-box-container'>

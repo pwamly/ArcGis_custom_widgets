@@ -1,4 +1,3 @@
-import AdvancedSelectionTable from "../runtime/widget"
 
 type layerContentsObjectType = {
     id:string,
@@ -68,32 +67,8 @@ class Helper {
         for (let i=0;i < layersContents.length;i++){
              layerContentsObject = {...layerContentsObject,[layersContents[i]?.id]:layersContents[i]?.attributes?.length??0}
         }
+        console.log(layersContents,layerContentsObject,"checkingnngngn")
         return layerContentsObject;
-    }
-
-    highlightOnlyCheckedLayer = (checkedLayersArr:string[])=>{
-        const jimuLayerViews = AdvancedSelectionTable.jimuLayerViews??[];
-        const keys = Object.keys(jimuLayerViews);
-        if (keys.length > 0){
-            keys.forEach((key)=>{
-                if (!checkedLayersArr.includes(jimuLayerViews[key]?.layer?.id)){
-                    jimuLayerViews[key]?.highLightHandle?.remove(key)
-                }
-            })
-        }
-    }
-
-    unhighlightLayer = (id:string)=>{
-        const jimuLayerViews = AdvancedSelectionTable.jimuLayerViews??[];
-        const keys = Object.keys(jimuLayerViews);
-        if (keys.length > 0){
-            keys.forEach((key)=>{
-                if (id === jimuLayerViews[key]?.layer?.id){
-                    console.log('ggggggggggggggg',jimuLayerViews[key]?.highLightHandle)
-                    jimuLayerViews[key]?.highLightHandle?.remove(key)
-                }
-            })
-        } 
     }
 
     getClickedLayerStatus = (results:any[],selectedLayer:selectedLayerType[]):boolean=>{
@@ -124,46 +99,12 @@ class Helper {
     }
 
 
-    openTableAttribute = ()=>{
-        const classnameWhenSideBarClosed = ".app-root-emotion-cache-ltr-1iklx1g";
-        const addedClassNameWhenClosed = "app-root-emotion-cache-ltr-oen2ei";
-        const addedClassNameWhenOpened = "app-root-emotion-cache-ltr-1iklx1g"
-        const ariaExpandedElement = document.querySelector(".sidebar-controller");
-        const elementForStyle = document.querySelector(".flex-shrink-0");
-        const element = document.querySelector(classnameWhenSideBarClosed);
-        element?.classList.remove(addedClassNameWhenOpened);
-        element?.classList.add(addedClassNameWhenClosed)
-        ariaExpandedElement.ariaExpanded = "true";
-        if (elementForStyle.style){
-            elementForStyle.style = "z-index: 0; flex-basis: 0px; overflow: auto;"
-        }
-    }
-
-    getNumberOfItemsInField = (field:string,selectedAttributes:any[])=>{
-        let numberOfItems = 0;
-        if (selectedAttributes?.length > 0){
-            let valueArr = [];
-            for (let i=0;i< selectedAttributes.length;i++){
-                valueArr.push(selectedAttributes[i][field]);
-            }
-            numberOfItems = valueArr.length;
-        }
-        return numberOfItems;
-    }
-
-    getSumOfValues = (field:string,selectedAttributes:any[])=>{
-        let numberToAdd = 0;
-        if (selectedAttributes?.length > 0){
-            for (let i =0;i < selectedAttributes.length;i++){
-                const val = selectedAttributes[i][field];
-                if (typeof val === "number" && !isNaN(val)){
-                    numberToAdd += val;
-                }
-            }
-        }
-        return numberToAdd;
-    }
-
 }
+
+
+
+
+
+
 
 export default new Helper();

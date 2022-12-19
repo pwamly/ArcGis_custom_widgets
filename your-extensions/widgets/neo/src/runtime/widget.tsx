@@ -1,4 +1,5 @@
-import {React,jsx,AllWidgetProps,IMState, appActions,WidgetManager} from 'jimu-core';
+import {React,jsx,AllWidgetProps,IMState, appActions} from 'jimu-core';
+import {Delete} from "esri/dijit/editing/Delete";
 import CreateLayer from '../component/create_layer';
 import LayersTable from '../component/layer_table';
 import Options from '../component/options';
@@ -10,24 +11,29 @@ import GraphicsLayer from 'esri/layers/GraphicsLayer';
 import helper from '../helper/helper'
 import CSVLayer from 'esri/layers/CSVLayer';
 
+
 type StateValueType = {stateValue:any}
 
 let  sketchLayer = new GraphicsLayer();
 
+let zoomOut = {
+    title:"Zoom Out",
+    id:"zoom-out",
+    class:"esri-icon-zoom-out-magnifying-glass"
+}
+
 export default class AdvancedSelectionTable extends React.PureComponent<AllWidgetProps<any>&StateValueType,any>{
 
-    static mapExtraStateProps(state:IMState){return {stateValue:state.widgetsState}};
-    static activeView = null;
-    static deleteStatus = false;
-    static jimuLayerViews = null;
-    static initialZoomValue = 0;
+    static mapExtraStateProps(state:IMState){return {stateValue:state.widgetsState}}
 
     state = {
+        activeView:null,
         popup:false,
         layers:[],
         layerContents:[],
         checkedLayers:[],
         numberOfAttribute:{},
+        geometryType:"rectangle",
         openStatistics:false,
         selectedAttributes:[],
         isItemSelected:false,
@@ -35,6 +41,7 @@ export default class AdvancedSelectionTable extends React.PureComponent<AllWidge
         layerTitle:" ",
         component_type:"LAYERS_CONTENTS",
         anchorEl:null,
+        selected:[],
         opencreateLayer:false,
         layerName:" ",
         csvBlob:null,
@@ -42,36 +49,32 @@ export default class AdvancedSelectionTable extends React.PureComponent<AllWidge
         uri:null,
         exportType:" ",
         blobValue:null,
+        geometry:null,
         csvFile:" ",
         createdLayerTitle:" ",
-        selectedGraphic:null,
+        deleteLayer:null
     }
 
     sketch = null;
-    
+    mapLayer = null;
+    layer = null;
+
     getMapLayers = (activeView:JimuMapView)=>{
         const newLayersArray = Object.keys(activeView?.jimuLayerViews)?.reduce((newLayerArray,item)=>{
             let object = {
                 layerName:activeView?.jimuLayerViews[item]?.layer?.title??item,
                 layerId:activeView?.jimuLayerViews[item]?.jimuLayerId??" ",
                 keyName:item,
-                id:activeView?.jimuLayerViews[item]?.layer?.id,
+                id:activeView?.jimuLayerViews[item]?.layer?.id
             };
             newLayerArray.push(object);
             return newLayerArray;
         },[])
-        newLayersArray.reverse();
-        this.setState({layers:newLayersArray});
-        this.props.dispatch(appActions.widgetStatePropChange("value","layers",newLayersArray))
-        AdvancedSelectionTable.activeView = activeView;
+        newLayersArray.reverse()
+        this.setState({activeView:activeView,layers:newLayersArray});
         let view = activeView?.view;
         const sketchViewlModel = new SketchViewModel({layer:sketchLayer,view:view})
         this.sketch = sketchViewlModel;
-        let zoomOut = {
-            title:"Zoom Out",
-            id:"zoom-out",
-            class:"esri-icon-zoom-out-magnifying-glass"
-        }
         view?.popup.actions.push(zoomOut);
         view?.popup.watch("visible",(visible)=>{
             if(visible && !this.state.popup){
@@ -84,46 +87,63 @@ export default class AdvancedSelectionTable extends React.PureComponent<AllWidge
         view.on("click",(event)=>{
             const selectedLayersContents = this.state.layerContents;
             event.stopPropagation();
-            view.hitTest(event).then((response)=>{})
-        })
-        AdvancedSelectionTable.jimuLayerViews = activeView?.jimuLayerViews;
-        AdvancedSelectionTable.initialZoomValue = activeView.view.zoom
+            view.hitTest(event).then((response)=>{
+                let status = helper.getClickedLayerStatus(response?.results,selectedLayersContents);
+                if (status){
+                    this.exportCsvAndJson()
+                }
+            })
+        });
+        function deleteLayer(){
+            if (response?.results?.length > 0){
+                response?.results.map((item)=>{
+                    if (Object.keys(this.state.numberOfAttribute).length > 0){
+                        const currentNUmberOfAttributes = {...this.state.numberOfAttribute};
+                        delete currentNUmberOfAttributes[item?.layer?.id];
+                        this.setState({numberOfAttribute:currentNUmberOfAttributes},()=>{
+                            item.layer.visible = false;
+                            this.state.deleteStatus = false; 
+                        })
+                    }
+                })
+            }
+
+        }
     }
 
     selectFeatureLayer = (geometry:any)=>{
         const checkedLayers = this.state.checkedLayers;
-        const activeView = AdvancedSelectionTable.activeView;
-        if (activeView){
-            activeView?.selectFeaturesByGraphic(geometry,"contains").then((results)=>{
-                helper.highlightOnlyCheckedLayer(checkedLayers);
+        if (this.state.activeView){
+            this.state.activeView?.selectFeaturesByGraphic(geometry,"contains").then((results)=>{
                 const selectedLayersContents = helper.getSelectedContentsLayer(results,checkedLayers);
                 const numberOfAttributes = helper.getNumberOfAttributes(selectedLayersContents);
-                this.setState({layerContents:selectedLayersContents,numberOfAttribute:numberOfAttributes});
-                this.props.dispatch(appActions.widgetStatePropChange("value","layerContents",selectedLayersContents));
+                this.setState({layerContents:selectedLayersContents,numberOfAttribute:numberOfAttributes})
             })
             .catch((err)=>{})
+
         }
     }
 
-    startSketching = (currentGeometry="rectangle")=>{
+    startSketching = ()=>{
         let mode = "hybrid";
-        const activeView = AdvancedSelectionTable.activeView;
         let limitedGeometryArray = ["rectangle","circle"];
+        let currentGeometry = this.state.geometryType;
         if (limitedGeometryArray.includes(currentGeometry)){
             mode = "freehand";
         }
         if (this.sketch){
             this.sketch.create(currentGeometry,{mode:mode});
-            if (activeView){
-                activeView.view.map.add(sketchLayer);
+            if (this.state.activeView){
+                this.state.activeView.view.map.add(sketchLayer);
                 this.sketch.on("create", async(event) => {
                     if (event?.state === "complete"){
                         this.selectFeatureLayer(event?.graphic);
-                        this.setState({selectedGraphic:event?.graphic});
+                        this.setState({selectedGraphic:event?.graphic,geometry:event?.graphic?.geometry});
                         this.sketch?.update([event?.graphic],{
                             enableScaling:false,
                             preserveAspectRatio: true,
                             toggleToolOnClick:false,
+
                         })
                     }
                 });
@@ -134,17 +154,33 @@ export default class AdvancedSelectionTable extends React.PureComponent<AllWidge
         }
     }
 
-    zoomOut(zoomValue?:number) {
-        const activeView = AdvancedSelectionTable.activeView;
-        const view = activeView?.view;
-        const currentZoomValue = zoomValue??view?.zoom - 2;
-        view?.goTo({center: view?.center,zoom: currentZoomValue});
+    exportCsvAndJson = ()=>{
+        const exportStatus = this.state.exportStatus;
+        const uri = this.state.uri;
+        const exportType = this.state.exportType;
+        const blobValue = this.state.blobValue;
+        if (exportStatus && uri){
+            if(exportType === "csv"){
+                window.open(uri,"blank");
+            }else{
+                if (window.saveAs && blobValue){
+                    window.saveAs(blobValue,"feature.json")
+                }else{
+                    window.open(uri,"blank");
+                }
+            }
+        }
+        this.setState({exportStatus:false,uri:null,exportType:" ",blobValue:null})
+    }
+
+    zoomOut() {
+        const view = this.state.activeView?.view;
+        view?.goTo({center: view?.center,zoom: view?.zoom - 2});
       }
 
     openPopup = (popupcontents:{title:string,contents:any})=>{
-        const activeView = AdvancedSelectionTable.activeView;
-        if (activeView?.view?.popup){
-            const popup = activeView.view.popup;
+        if (this.state.activeView?.view?.popup){
+            const popup = this.state.activeView.view.popup;
             popup.visible = true;
             popup.title = popupcontents.title;
             popup.content = popupcontents.contents;
@@ -163,10 +199,8 @@ export default class AdvancedSelectionTable extends React.PureComponent<AllWidge
     }
 
     onClickZoomIn = ()=>{
-        const activeView = AdvancedSelectionTable.activeView;
-        const view = activeView?.view;
-        const geometry = this.state.selectedGraphic?.geometry;
-        const extent = geometry?.extent;
+        const view = this.state.activeView?.view;
+        const extent = this.state.geometry?.extent;
         if (view && extent){
             view.goTo(extent);
         }
@@ -175,8 +209,7 @@ export default class AdvancedSelectionTable extends React.PureComponent<AllWidge
     addCreatedLayer = ()=>{
         const csvFile = this.state.csvFile;
         const exportType = this.state.exportType;
-        const activeView = AdvancedSelectionTable.activeView;
-        const view = activeView?.view;
+        const view = this.state.activeView?.view;
         if (csvFile && view && exportType === "csv"){
             const layerTitle = this.state.createdLayerTitle
             const blob = new Blob([csvFile],{type:"plain/text"});
@@ -208,33 +241,7 @@ export default class AdvancedSelectionTable extends React.PureComponent<AllWidge
         this.setState({layers:currentLayers,exportType:null,csvFile:null,createdLayerTitle:null})
     }
 
-    restoreMap = ()=>{
-        const activeView = AdvancedSelectionTable.activeView;
-        if (activeView){
-            activeView.clearSelectedFeatures();
-            const zoomVal = AdvancedSelectionTable.initialZoomValue
-            this.zoomOut(zoomVal);
-            this.setState({checkedLayers:[],numberOfAttribute:{},layerContents:[],selectedAttributes:[]});
-        }
-    }
-
-    onClickRefresh = ()=>{
-        this.restoreMap();
-    }
-
-    componentDidMount(): void {
-        const closeButtonElement = document.querySelector(".action-close");
-        closeButtonElement.addEventListener("click",()=>{
-            this.restoreMap()
-        })
-    }
-   
     render(): React.ReactNode {
-        const open = Boolean(this.state.anchorEl);
-        if (this.props.state == "CLOSED") {
-            this.sketch.cancel();
-            this.setState({ btnfocus: false });
-          }
         return(
             <>
                 {
@@ -247,7 +254,7 @@ export default class AdvancedSelectionTable extends React.PureComponent<AllWidge
                 <AdvancedSelectionTableContext.Provider value = {{...this.state,"parent":this}}>
                     <LayersTable />
                     {this.state.openStatistics && <StatisticsModal />}
-                    {open && <Options />}
+                    <Options />
                     <CreateLayer />
                 </AdvancedSelectionTableContext.Provider>
             </>

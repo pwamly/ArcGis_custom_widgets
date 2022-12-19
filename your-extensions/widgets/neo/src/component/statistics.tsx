@@ -8,7 +8,6 @@ import '../assets/css/style.scss'
 import { Button } from 'jimu-ui';
 import { AdvancedSelectionTableContext } from '../context/context';
 import ModalComponent from './common/modal';
-import helper from '../helper/helper';
 
 class ModalBody extends React.PureComponent<any,any>{
 
@@ -19,26 +18,22 @@ class ModalBody extends React.PureComponent<any,any>{
   state = {items:[],title:" ",columns:{}};
 
   onSelectField = (field:string)=>{
-    const attributes = this.context?.selectedAttributes;
     this.setState({title:field});
-    let average = null
-    let minimum = null;
+    let mean = null
+    let standardDeviation = null;
+    let median = null;
     let maximum = null;
-    let numberOfItems = null;
-    let sumOfValues = null;
     if (this.statistics){
-      average = this.statistics?.arithmeticMean(field);
-      minimum = this.statistics?.minimum(field);
+      mean = this.statistics?.arithmeticMean(field);
+      standardDeviation = this.statistics?.standardDeviation(field);
+      median = this.statistics?.median(field);
       maximum = this.statistics?.maximum(field);
-      numberOfItems = helper.getNumberOfItemsInField(field,attributes); 
-      sumOfValues = helper.getSumOfValues(field,attributes)
       this.setState({columns:{
         ...this.state.columns,
-        "Count of items":numberOfItems,
-        "Sum of Values":sumOfValues,
-        "Minimum":minimum,
-        "Maximum":maximum,
-        "Average":average,
+        "mean":mean,
+        "standardDeviation":standardDeviation,
+        "median":median,
+        "maximum":maximum
       }})
     }
   }
