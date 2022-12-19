@@ -89,7 +89,7 @@ class Helper {
         if (keys.length > 0){
             keys.forEach((key)=>{
                 if (id === jimuLayerViews[key]?.layer?.id){
-                    console.log('ggggggggggggggg',jimuLayerViews[key]?.highLightHandle)
+                    jimuLayerViews[key].layer.visible = false;
                     jimuLayerViews[key]?.highLightHandle?.remove(key)
                 }
             })
