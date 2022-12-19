@@ -42,7 +42,6 @@ export default class Widget extends React.PureComponent<
     const layerList = new LayerList({
       view: jmv.view
     });
-    console.log('lllllllllllllllllllllllllllllllll',layerList);
     
   };
   render() {
